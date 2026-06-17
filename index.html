@@ -155,6 +155,38 @@
   .btn-del{background:transparent; border:0; cursor:pointer; font-size:13px; margin-left:auto;
     opacity:.65; padding:0 4px; line-height:1}
   .btn-del:hover{opacity:1}
+
+  /* patch notes: card button + modal */
+  .card-actions{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+  .pn-btn{background:transparent; border:1px solid var(--line); color:var(--muted);
+    font-size:13px; padding:10px 16px; border-radius:9px; cursor:pointer}
+  .pn-btn:hover{color:var(--txt); border-color:var(--muted)}
+  .modal{position:fixed; inset:0; background:rgba(0,0,0,.62); display:flex; align-items:center;
+    justify-content:center; padding:20px; z-index:50; animation:fade .2s ease both}
+  .modal[hidden]{display:none}
+  .modal-card{background:var(--panel); border:1px solid var(--line); border-radius:16px; width:100%;
+    max-width:560px; max-height:85vh; display:flex; flex-direction:column; box-shadow:0 30px 70px rgba(0,0,0,.5)}
+  .modal-head{display:flex; align-items:center; justify-content:space-between; padding:17px 20px; border-bottom:1px solid var(--line)}
+  .modal-head h3{margin:0; font-size:16.5px}
+  .modal-head .x{background:transparent; border:0; color:var(--muted); font-size:20px; cursor:pointer; line-height:1; padding:0 2px}
+  .modal-head .x:hover{color:var(--txt)}
+  .modal-body{padding:18px 20px; overflow-y:auto; display:flex; flex-direction:column; gap:13px}
+  .pn-entry{border:1px solid var(--line); border-radius:11px; padding:13px 15px; background:var(--bg2)}
+  .pn-head{display:flex; align-items:baseline; gap:10px; margin-bottom:7px}
+  .pn-ver{font-weight:700; font-size:14.5px; color:var(--blue)}
+  .pn-date{font-size:12px; color:var(--faint)}
+  .pn-notes{margin:0; padding-left:18px; display:flex; flex-direction:column; gap:3px}
+  .pn-notes li{font-size:13.5px; color:var(--muted); white-space:pre-wrap; word-break:break-word}
+  .pn-form{border-top:1px solid var(--line); padding:16px 20px; display:flex; flex-direction:column; gap:9px}
+  .pn-form .row{display:flex; gap:9px}
+  .pn-form input, .pn-form textarea{padding:9px 11px; font-size:13.5px; border-radius:8px; border:1px solid var(--line);
+    background:var(--panel2); color:var(--txt); outline:none; font-family:inherit; width:100%}
+  .pn-form textarea{resize:vertical; min-height:78px; line-height:1.5}
+  .pn-form .submit{align-self:flex-start; padding:9px 18px; font-size:13.5px; border:0; border-radius:8px;
+    cursor:pointer; color:#06121f; background:var(--green)}
+  #pnStatus{font-size:12.5px; color:var(--muted)}
+  .pn-del{margin-left:auto; background:transparent; border:0; cursor:pointer; font-size:13px; opacity:.65}
+  .pn-del:hover{opacity:1}
 </style>
 </head>
 <body>
@@ -213,8 +245,11 @@
         </div>
         <div class="desc">dm3/dm4 HRTEM 이미지 필터링 → ROI → FFT 스폿 검출 → CIF zone-axis 인덱싱 → 상(phase) 분리까지 한 창에서.</div>
         <div class="meta"><span class="tag">버전 <b>v1.0.0</b></span><span class="tag">~<b>330 MB</b> (zip)</span><span class="tag">Win 64-bit</span></div>
-        <a class="dl" href="https://github.com/qmrk123/tem-tools/releases/download/v1.0.0/HRTEM-Analyzer-v1.0.0-win64.zip">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>다운로드</a>
+        <div class="card-actions">
+          <a class="dl" href="https://github.com/qmrk123/tem-tools/releases/download/v1.0.0/HRTEM-Analyzer-v1.0.0-win64.zip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>다운로드</a>
+          <button class="pn-btn" data-app="hrtem-analyzer">패치노트</button>
+        </div>
       </div>
 
       <div class="card" style="--ac:var(--green)">
@@ -226,8 +261,11 @@
         </div>
         <div class="desc">JEOL .pts/.asw EDS 스펙트럼 이미지 — 원소 매핑, Cliff-Lorimer/ζ 정량, 자동 피크 식별, 라인스캔.</div>
         <div class="meta"><span class="tag">버전 <b>v1.0.0</b></span><span class="tag">~<b>360 MB</b> (zip)</span><span class="tag">Win 64-bit</span></div>
-        <a class="dl" href="https://github.com/qmrk123/tem-tools/releases/download/v1.0.0/JEOL-EDS-Analyzer-v1.0.0-win64.zip">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>다운로드</a>
+        <div class="card-actions">
+          <a class="dl" href="https://github.com/qmrk123/tem-tools/releases/download/v1.0.0/JEOL-EDS-Analyzer-v1.0.0-win64.zip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>다운로드</a>
+          <button class="pn-btn" data-app="jeol-eds">패치노트</button>
+        </div>
       </div>
 
       <div class="card" style="--ac:var(--violet)">
@@ -239,8 +277,11 @@
         </div>
         <div class="desc">EELS 스펙트럼 이미지 — 자기지도 CNN 디노이징 + ELNES 클러스터링으로 산화수 매핑 (CPU 추론 포함).</div>
         <div class="meta"><span class="tag">버전 <b>v1.0.0</b></span><span class="tag">~<b>250 MB</b> (zip)</span><span class="tag">Win 64-bit</span></div>
-        <a class="dl" href="https://github.com/qmrk123/tem-tools/releases/download/v1.0.0/EELS-Oxidation-Mapping-v1.0.0-win64.zip">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>다운로드</a>
+        <div class="card-actions">
+          <a class="dl" href="https://github.com/qmrk123/tem-tools/releases/download/v1.0.0/EELS-Oxidation-Mapping-v1.0.0-win64.zip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>다운로드</a>
+          <button class="pn-btn" data-app="eels-mapping">패치노트</button>
+        </div>
       </div>
 
     </div>
@@ -257,8 +298,11 @@
         </div>
         <div class="desc">임의 zone-axis 다중슬라이스(multislice) HRTEM 상 시뮬레이션 — 격자면 인덱싱, 원자모델 오버레이, 실시간 defocus/두께. abTEM 검증.</div>
         <div class="meta"><span class="tag">버전 <b>v1.0.0</b></span><span class="tag">~<b>100 MB</b> (zip)</span><span class="tag">Win 64-bit</span></div>
-        <a class="dl" href="https://github.com/qmrk123/tem-tools/releases/download/v1.0.0/HRTEM-Simulator-v1.0.0-win64.zip">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>다운로드</a>
+        <div class="card-actions">
+          <a class="dl" href="https://github.com/qmrk123/tem-tools/releases/download/v1.0.0/HRTEM-Simulator-v1.0.0-win64.zip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>다운로드</a>
+          <button class="pn-btn" data-app="hrtem-sim">패치노트</button>
+        </div>
       </div>
 
       <div class="card" style="--ac:var(--violet)">
@@ -270,8 +314,11 @@
         </div>
         <div class="desc">물리 기반 EELS forward-model + 피팅 — 플라스몬/유전함수, 수소꼴 core-loss edge, ELNES/EXELFS, 복수산란, 물질 빌더, 정량.</div>
         <div class="meta"><span class="tag">버전 <b>v1.0.0</b></span><span class="tag">~<b>95 MB</b> (zip)</span><span class="tag">Win 64-bit</span></div>
-        <a class="dl" href="https://github.com/qmrk123/tem-tools/releases/download/v1.0.0/EELS-Simulator-v1.0.0-win64.zip">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>다운로드</a>
+        <div class="card-actions">
+          <a class="dl" href="https://github.com/qmrk123/tem-tools/releases/download/v1.0.0/EELS-Simulator-v1.0.0-win64.zip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>다운로드</a>
+          <button class="pn-btn" data-app="eels-sim">패치노트</button>
+        </div>
       </div>
 
     </div>
@@ -309,6 +356,26 @@
         </div>
       </form>
       <div id="qlist"><div class="empty">게시판을 불러오는 중…</div></div>
+    </div>
+
+    <!-- patch-notes modal -->
+    <div id="pnModal" class="modal" hidden>
+      <div class="modal-card">
+        <div class="modal-head">
+          <h3 id="pnTitle">패치노트</h3>
+          <button id="pnClose" class="x" type="button" aria-label="닫기">✕</button>
+        </div>
+        <div id="pnBody" class="modal-body"></div>
+        <form id="pnForm" class="pn-form" hidden autocomplete="off">
+          <div class="row">
+            <input id="pnVer" placeholder="버전 (예: 1.1.0)" maxlength="40">
+            <input id="pnDate" placeholder="날짜 (예: 2026-06-20)" maxlength="20">
+          </div>
+          <textarea id="pnNotes" placeholder="변경 내용 — 한 줄에 하나씩 적으면 항목으로 표시됩니다." maxlength="4000"></textarea>
+          <button class="submit" type="submit">패치노트 추가</button>
+          <span id="pnStatus"></span>
+        </form>
+      </div>
     </div>
 
     <footer>
@@ -407,6 +474,7 @@
     adminBtn.textContent = isAdmin ? "관리자 로그아웃" : "관리자";
     adminState.textContent = isAdmin ? "관리자 모드 ✓" : "";
     render();
+    if (openApp) renderModal();
   });
 
   // ---------- live data ----------
@@ -492,6 +560,67 @@
       setTimeout(()=> statusEl.textContent = "", 2500);
     } catch(err){ statusEl.textContent = "등록 실패: " + err.message; }
     finally { submitBtn.disabled = false; }
+  });
+
+  // ================= Patch notes =================
+  const APPS = {
+    "hrtem-analyzer": "HRTEM Integrated Analyzer",
+    "jeol-eds": "JEOL EDS Analysis",
+    "eels-mapping": "EELS Oxidation-State Mapping",
+    "hrtem-sim": "HRTEM Simulator",
+    "eels-sim": "EELS Simulator"
+  };
+  const patchnotes = collection(db, "patchnotes");
+  const pnModal=$("pnModal"), pnTitle=$("pnTitle"), pnBody=$("pnBody"), pnForm=$("pnForm"),
+        pnVer=$("pnVer"), pnDate=$("pnDate"), pnNotes=$("pnNotes"), pnStatus=$("pnStatus");
+  let pnData = {}, openApp = null;
+
+  onSnapshot(query(patchnotes, orderBy("createdAt","desc"), limit(500)), snap => {
+    pnData = {};
+    snap.forEach(d => { const x={id:d.id, ...d.data()}; (pnData[x.app]=pnData[x.app]||[]).push(x); });
+    if (openApp) renderModal();
+  });
+
+  function renderModal(){
+    pnTitle.textContent = (APPS[openApp]||"") + " · 패치노트";
+    const entries = pnData[openApp] || [];
+    pnBody.innerHTML = entries.length ? entries.map(e => {
+      const items = esc(e.body||"").split("\n").filter(s=>s.trim()).map(s=>`<li>${s.trim()}</li>`).join("");
+      const del = isAdmin ? `<button class="pn-del" data-id="${e.id}" title="삭제">🗑</button>` : "";
+      return `<div class="pn-entry"><div class="pn-head"><span class="pn-ver">v${esc(e.version)}</span><span class="pn-date">${esc(e.date)}</span>${del}</div><ul class="pn-notes">${items}</ul></div>`;
+    }).join("") : '<div class="empty">아직 등록된 패치노트가 없습니다.</div>';
+    pnForm.hidden = !isAdmin;
+  }
+  function openModal(app){
+    openApp = app;
+    if (isAdmin && !pnDate.value){ try{ pnDate.value = new Date().toISOString().slice(0,10); }catch(_){} }
+    renderModal();
+    pnModal.hidden = false;
+  }
+  function closeModal(){ pnModal.hidden = true; openApp = null; }
+
+  document.querySelectorAll(".pn-btn").forEach(b => b.addEventListener("click", () => openModal(b.dataset.app)));
+  $("pnClose").addEventListener("click", closeModal);
+  pnModal.addEventListener("click", e => { if (e.target === pnModal) closeModal(); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && !pnModal.hidden) closeModal(); });
+
+  pnBody.addEventListener("click", async e => {
+    const del = e.target.closest(".pn-del"); if(!del) return;
+    if(!confirm("이 패치노트를 삭제할까요?")) return;
+    try { await deleteDoc(doc(db,"patchnotes",del.dataset.id)); } catch(err){ alert("삭제 실패: "+err.message); }
+  });
+
+  pnForm.addEventListener("submit", async e => {
+    e.preventDefault();
+    const version = pnVer.value.trim(), date = pnDate.value.trim(), body = pnNotes.value.trim();
+    if(!version || !body){ pnStatus.textContent = "버전과 내용을 입력하세요."; return; }
+    const btn = pnForm.querySelector(".submit"); btn.disabled = true; pnStatus.textContent = "추가 중…";
+    try {
+      await addDoc(patchnotes, { app: openApp, version, date, body, createdAt: serverTimestamp() });
+      pnVer.value=""; pnNotes.value=""; pnStatus.textContent = "추가되었습니다.";
+      setTimeout(()=> pnStatus.textContent="", 2500);
+    } catch(err){ pnStatus.textContent = "추가 실패: " + err.message; }
+    finally { btn.disabled = false; }
   });
 </script>
 </body>

@@ -38,6 +38,17 @@ service cloud.firestore {
       allow update: if false;
       allow delete: if isAdmin();          // 삭제는 로그인한 관리자만
     }
+    match /patchnotes/{note} {
+      allow read: if true;
+      allow create: if isAdmin()
+                    && request.resource.data.keys().hasOnly(['app','version','date','body','createdAt'])
+                    && request.resource.data.app is string && request.resource.data.app.size() < 40
+                    && request.resource.data.version is string && request.resource.data.version.size() < 40
+                    && request.resource.data.date is string && request.resource.data.date.size() < 20
+                    && request.resource.data.body is string && request.resource.data.body.size() < 4000;
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
   }
 }
 ```
@@ -72,6 +83,16 @@ service cloud.firestore {
 - **삭제**: 관리자 모드에서 각 글/답글의 🗑 클릭. (질문을 지우면 그 답글도 함께 삭제됩니다.)
 - 웹에서의 삭제는 **로그인한 관리자만** 가능하며, 일반 방문자는 불가합니다. 콘솔에서 직접
   삭제·수정하는 것도 언제든 가능합니다.
+
+## 패치노트 추가 (관리자)
+각 앱 카드의 **패치노트** 버튼을 누르면 버전 이력이 뜹니다(누구나 열람 가능).
+패치할 때마다 새 항목을 추가하려면:
+1. 페이지에서 **관리자**로 로그인
+2. 해당 앱의 **패치노트** 버튼 클릭 → 모달 하단의 입력칸에
+   **버전**(예: `1.1.0`), **날짜**(자동 입력됨), **변경 내용**(한 줄에 하나씩) 작성 → **패치노트 추가**
+3. 최신 항목이 맨 위에 표시됩니다. 잘못 올렸으면 🗑 로 삭제.
+
+패치노트도 Firestore(`patchnotes` 컬렉션)에 저장되며, 추가·삭제는 관리자만 가능합니다.
 
 ## 무료 한도
 Firestore 무료(Spark) 요금제는 하루 읽기 5만 / 쓰기 2만 건으로, 연구실 내부 게시판에는
