@@ -20,21 +20,31 @@ Firestore → **규칙(Rules)** 탭에 아래를 그대로 붙여넣고 **게시
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == 'qmrk123@hanyang.ac.kr';
+    }
     match /posts/{post} {
       allow read: if true;
-      allow create: if request.resource.data.keys().hasOnly(['name','message','createdAt'])
+      allow create: if request.resource.data.keys().hasOnly(['name','message','createdAt','parentId','admin'])
+                    && request.resource.data.name is string
+                    && request.resource.data.name.size() < 60
                     && request.resource.data.message is string
                     && request.resource.data.message.size() > 0
                     && request.resource.data.message.size() < 2000
-                    && request.resource.data.name is string
-                    && request.resource.data.name.size() < 60;
-      allow update, delete: if false;   // 글 수정/삭제는 콘솔에서 관리자만
+                    && (!('parentId' in request.resource.data.keys())
+                        || request.resource.data.parentId is string)
+                    && (!('admin' in request.resource.data.keys())
+                        || (request.resource.data.admin == true && isAdmin()));
+      allow update: if false;
+      allow delete: if isAdmin();          // 삭제는 로그인한 관리자만
     }
   }
 }
 ```
 
-이 규칙은 **누구나 읽기 + 글쓰기**는 되지만(길이 제한 포함), **남의 글 수정·삭제는 차단**합니다.
+이 규칙은 **누구나 읽기·글쓰기·답글**은 되지만(길이 제한 포함), **글 삭제와 "운영자 답변" 표시는
+로그인한 관리자(아래 5단계)만** 가능합니다. `isAdmin()`의 이메일은 5단계에서 만들 관리자 계정과
+같아야 합니다(기본값 `qmrk123@hanyang.ac.kr`).
 
 ## 4. 웹 앱 등록 후 config 복사
 1. 프로젝트 개요 옆 **⚙️ → 프로젝트 설정** → 하단 **내 앱**에서 **웹(`</>`)** 아이콘 클릭
@@ -45,10 +55,23 @@ service cloud.firestore {
 
 → 푸시 후 페이지를 새로고침하면 게시판이 활성화됩니다.
 
-## 글에 답변 달기 / 스팸 삭제 (관리자)
-- **답변**: Firestore 콘솔 → `posts` 컬렉션 → 해당 글 문서 열기 → 필드 추가
-  `reply` (string) 에 답변 내용 입력 → 저장하면 페이지에 "↳ 운영자 답변"으로 표시됩니다.
-- **삭제**: 콘솔에서 해당 문서를 삭제하면 됩니다. (웹에서는 누구도 삭제 못 함)
+## 5. 관리자 로그인 만들기 (Authentication)
+페이지의 **관리자 버튼**으로 글 삭제·운영자 답변을 하려면, 관리자 암호를 Firebase 로그인
+비밀번호로 등록합니다(이렇게 해야 삭제 권한이 서버에서 실제로 보호됩니다).
+
+1. 좌측 메뉴 **빌드 → Authentication → 시작하기**
+2. **Sign-in method** 탭 → **이메일/비밀번호** 사용 설정(Enable) → 저장
+3. **Users** 탭 → **사용자 추가**
+   - 이메일: `qmrk123@hanyang.ac.kr` (위 규칙·`index.html`의 `ADMIN_EMAIL`과 동일해야 함)
+   - 비밀번호: 관리자 암호 입력
+4. 끝! 이제 홈페이지에서 **관리자 버튼 → 암호 입력**으로 로그인하면 각 글에 🗑(삭제)와
+   "운영자 답변"으로 등록할 수 있습니다.
+
+## 글 관리 (관리자)
+- **운영자 답변**: 관리자로 로그인 → 해당 글의 **답글** 버튼 → 입력하면 "↳ 운영자 답변"(초록)으로 표시.
+- **삭제**: 관리자 모드에서 각 글/답글의 🗑 클릭. (질문을 지우면 그 답글도 함께 삭제됩니다.)
+- 웹에서의 삭제는 **로그인한 관리자만** 가능하며, 일반 방문자는 불가합니다. 콘솔에서 직접
+  삭제·수정하는 것도 언제든 가능합니다.
 
 ## 무료 한도
 Firestore 무료(Spark) 요금제는 하루 읽기 5만 / 쓰기 2만 건으로, 연구실 내부 게시판에는

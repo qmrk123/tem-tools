@@ -118,6 +118,43 @@
   .post .reply .who{color:var(--green); font-size:13px}
   .post .reply .body{font-size:13.5px; margin-top:3px}
   .board .empty{color:var(--faint); font-size:13.5px; text-align:center; padding:20px}
+  .board-head{display:flex; align-items:center; justify-content:space-between; gap:12px}
+  .admin-zone{display:flex; align-items:center; gap:10px}
+  .admin-state{font-size:12px; color:var(--green)}
+  .admin-link{background:transparent; border:1px solid var(--line); color:var(--muted);
+    font-size:12px; padding:5px 12px; border-radius:8px; cursor:pointer}
+  .admin-link:hover{color:var(--txt); border-color:var(--muted)}
+  .admin-login{display:flex; gap:8px; align-items:center; justify-content:flex-end; margin:0 0 14px}
+  .admin-login input{padding:8px 11px; font-size:13px; border-radius:8px; border:1px solid var(--line);
+    background:var(--panel2); color:var(--txt); outline:none; max-width:200px}
+  .admin-login button{padding:8px 14px; font-size:13px; border:1px solid var(--line); border-radius:8px;
+    cursor:pointer; background:var(--panel2); color:var(--txt)}
+  .admin-login span{font-size:12px; color:#ff7a7a}
+  .post .body{margin-bottom:2px}
+  .replies{display:flex; flex-direction:column; gap:9px; margin-top:12px; padding-left:14px;
+    border-left:2px solid var(--line)}
+  .replies:empty{display:none}
+  .reply2{background:var(--panel2); border:1px solid var(--line); border-radius:9px; padding:10px 13px}
+  .reply2 .head{display:flex; align-items:baseline; gap:9px; margin-bottom:4px}
+  .reply2 .who{font-weight:600; font-size:13px; color:var(--muted)}
+  .reply2 .when{font-size:11.5px; color:var(--faint)}
+  .reply2 .body{font-size:13.5px; color:var(--muted); white-space:pre-wrap; word-break:break-word}
+  .reply2.reply-admin{border-left:2px solid var(--green); background:rgba(61,220,151,.06)}
+  .reply2.reply-admin .who{color:var(--green)}
+  .reply-actions{margin-top:11px}
+  .btn-reply{background:transparent; border:1px solid var(--line); color:var(--muted);
+    font-size:12.5px; padding:5px 13px; border-radius:8px; cursor:pointer}
+  .btn-reply:hover{color:var(--txt); border-color:var(--muted)}
+  .reply-form{margin-top:11px; display:flex; flex-direction:column; gap:8px}
+  .reply-form input, .reply-form textarea{padding:9px 11px; font-size:13.5px; border-radius:8px;
+    border:1px solid var(--line); background:var(--panel2); color:var(--txt); outline:none; font-family:inherit}
+  .reply-form input{max-width:200px}
+  .reply-form textarea{resize:vertical; min-height:60px; line-height:1.5}
+  .reply-form button{align-self:flex-start; padding:8px 16px; font-size:13px; border:0; border-radius:8px;
+    cursor:pointer; color:#06121f; background:var(--blue)}
+  .btn-del{background:transparent; border:0; cursor:pointer; font-size:13px; margin-left:auto;
+    opacity:.65; padding:0 4px; line-height:1}
+  .btn-del:hover{opacity:1}
 </style>
 </head>
 <body>
@@ -248,7 +285,18 @@
       </ol>
     </div>
 
-    <div class="section-label" style="margin-top:36px">문의 · 피드백 (Q&amp;A)</div>
+    <div class="board-head" style="margin-top:36px">
+      <div class="section-label" style="margin:0">문의 · 피드백 (Q&amp;A)</div>
+      <div class="admin-zone">
+        <span id="adminState" class="admin-state"></span>
+        <button id="adminBtn" class="admin-link" type="button">관리자</button>
+      </div>
+    </div>
+    <div id="adminLogin" class="admin-login" hidden>
+      <input id="adminPw" type="password" placeholder="관리자 암호" autocomplete="off">
+      <button id="adminGo" type="button">로그인</button>
+      <span id="adminErr"></span>
+    </div>
     <div class="board">
       <form id="qform" autocomplete="off">
         <div class="row">
@@ -303,13 +351,15 @@
   if(sessionStorage.getItem("tem_ok")==="1"){ reveal(); }
 </script>
 
-<!-- Q&A board (Firebase Firestore). Visitors post with name+message; no login/GitHub needed. -->
+<!-- Q&A board (Firebase Firestore). Visitors post & reply with no login; admin signs in for delete/운영자 답변. -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, serverTimestamp }
+  import { getFirestore, collection, addDoc, deleteDoc, doc, getDocs, query, where, orderBy, limit, onSnapshot, serverTimestamp }
     from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-  // ===== Firebase 설정 — 본인 프로젝트의 웹 config로 교체하세요 (공개되어도 안전한 값) =====
+  // ===== Firebase 설정 (공개되어도 안전한 값) =====
   const firebaseConfig = {
     apiKey: "AIzaSyC-DJxUvCVFgiU0CBmNj1-JEZoj0_X_mSU",
     authDomain: "temanaly-cff43.firebaseapp.com",
@@ -318,52 +368,131 @@
     messagingSenderId: "547145384413",
     appId: "1:547145384413:web:3c798855f911c6293eb634"
   };
+  // 관리자 로그인 이메일. Firebase Authentication(이메일/비밀번호)에 이 이메일로 사용자를 만들고,
+  // 비밀번호를 관리자 암호로 설정하세요. 이메일은 공개돼도 안전(실제 인증은 서버에서).
+  const ADMIN_EMAIL = "qmrk123@hanyang.ac.kr";
 
-  const list = document.getElementById("qlist");
-  const form = document.getElementById("qform");
-  const statusEl = document.getElementById("qstatus");
-  const submitBtn = document.getElementById("qsubmit");
   const esc = s => (s||"").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const $ = id => document.getElementById(id);
+  const list = $("qlist"), form = $("qform"), statusEl = $("qstatus"), submitBtn = $("qsubmit");
 
-  if (firebaseConfig.apiKey.startsWith("PASTE")) {
-    list.innerHTML = '<div class="empty">게시판은 관리자 설정 후 활성화됩니다.</div>';
-    submitBtn.disabled = true;
-  } else {
-    const db = getFirestore(initializeApp(firebaseConfig));
-    const posts = collection(db, "posts");
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+  const posts = collection(db, "posts");
 
-    const fmt = ts => {
-      if(!ts || !ts.toDate) return "방금";
-      const d = ts.toDate(), p = n => String(n).padStart(2,"0");
-      return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
-    };
+  let isAdmin = false, cache = [];
+  const fmt = ts => {
+    if(!ts || !ts.toDate) return "방금";
+    const d = ts.toDate(), p = n => String(n).padStart(2,"0");
+    return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+  };
 
-    onSnapshot(query(posts, orderBy("createdAt","desc"), limit(100)), snap => {
-      if (snap.empty){ list.innerHTML = '<div class="empty">아직 글이 없습니다. 첫 문의를 남겨보세요.</div>'; return; }
-      let html = "";
-      snap.forEach(doc => {
-        const d = doc.data();
-        const reply = d.reply ? `<div class="reply"><div class="who">↳ 운영자 답변</div><div class="body">${esc(d.reply)}</div></div>` : "";
-        html += `<div class="post"><div class="head"><span class="who">${esc(d.name)||"익명"}</span><span class="when">${fmt(d.createdAt)}</span></div><div class="body">${esc(d.message)}</div>${reply}</div>`;
-      });
-      list.innerHTML = html;
-    }, err => { list.innerHTML = '<div class="empty">게시판을 불러오지 못했습니다: '+esc(err.message)+'</div>'; });
-
-    form.addEventListener("submit", async e => {
-      e.preventDefault();
-      const name = document.getElementById("qname").value.trim().slice(0,60);
-      const message = document.getElementById("qmsg").value.trim();
-      if(!message) return;
-      submitBtn.disabled = true; statusEl.textContent = "등록 중…";
-      try {
-        await addDoc(posts, { name, message, createdAt: serverTimestamp() });
-        document.getElementById("qmsg").value = "";
-        statusEl.textContent = "등록되었습니다.";
-        setTimeout(()=> statusEl.textContent = "", 2500);
-      } catch(err){ statusEl.textContent = "등록 실패: " + err.message; }
-      finally { submitBtn.disabled = false; }
-    });
+  // ---------- admin sign-in ----------
+  const adminBtn=$("adminBtn"), adminLogin=$("adminLogin"), adminPw=$("adminPw"), adminGo=$("adminGo"), adminErr=$("adminErr"), adminState=$("adminState");
+  adminBtn.addEventListener("click", () => {
+    if (isAdmin) { signOut(auth); return; }
+    adminLogin.hidden = !adminLogin.hidden;
+    if (!adminLogin.hidden) adminPw.focus();
+  });
+  async function doLogin(){
+    adminErr.textContent = "";
+    try { await signInWithEmailAndPassword(auth, ADMIN_EMAIL, adminPw.value); adminPw.value=""; adminLogin.hidden=true; }
+    catch(e){ adminErr.textContent = "암호가 올바르지 않습니다."; }
   }
+  adminGo.addEventListener("click", doLogin);
+  adminPw.addEventListener("keydown", e => { if(e.key==="Enter") doLogin(); });
+  onAuthStateChanged(auth, user => {
+    isAdmin = !!user && user.email === ADMIN_EMAIL;
+    adminBtn.textContent = isAdmin ? "관리자 로그아웃" : "관리자";
+    adminState.textContent = isAdmin ? "관리자 모드 ✓" : "";
+    render();
+  });
+
+  // ---------- live data ----------
+  onSnapshot(query(posts, orderBy("createdAt","asc"), limit(500)), snap => {
+    cache = []; snap.forEach(d => cache.push({ id:d.id, ...d.data() }));
+    render();
+  }, err => { list.innerHTML = '<div class="empty">게시판을 불러오지 못했습니다: '+esc(err.message)+'</div>'; });
+
+  const delBtn = (id, top) => isAdmin ? `<button class="btn-del" data-id="${id}" data-top="${top?1:0}" title="삭제">🗑</button>` : "";
+
+  function render(){
+    const tops = cache.filter(p => !p.parentId);
+    const byParent = {};
+    cache.filter(p => p.parentId).forEach(r => { (byParent[r.parentId] = byParent[r.parentId] || []).push(r); });
+    if (!tops.length){ list.innerHTML = '<div class="empty">아직 글이 없습니다. 첫 문의를 남겨보세요.</div>'; return; }
+    let html = "";
+    tops.slice().reverse().forEach(p => {                    // newest question first
+      let rhtml = "";
+      (byParent[p.id]||[]).forEach(r => {
+        const who = r.admin ? "↳ 운영자 답변" : ("↳ " + (esc(r.name)||"익명"));
+        rhtml += `<div class="reply2${r.admin?" reply-admin":""}"><div class="head"><span class="who">${who}</span><span class="when">${fmt(r.createdAt)}</span>${delBtn(r.id,false)}</div><div class="body">${esc(r.message)}</div></div>`;
+      });
+      html += `<div class="post">
+        <div class="head"><span class="who">${esc(p.name)||"익명"}</span><span class="when">${fmt(p.createdAt)}</span>${delBtn(p.id,true)}</div>
+        <div class="body">${esc(p.message)}</div>
+        <div class="replies">${rhtml}</div>
+        <div class="reply-actions"><button class="btn-reply" data-id="${p.id}">답글</button></div>
+        <form class="reply-form" data-id="${p.id}" hidden autocomplete="off">
+          <input class="rname" placeholder="이름 (선택)" maxlength="60">
+          <textarea class="rmsg" placeholder="${isAdmin?'운영자 답변을 입력하세요.':'답글을 입력하세요.'}" maxlength="2000"></textarea>
+          <button type="submit">${isAdmin?'운영자 답변 등록':'답글 등록'}</button>
+        </form>
+      </div>`;
+    });
+    list.innerHTML = html;
+  }
+
+  // ---------- delegated: reply toggle / delete ----------
+  list.addEventListener("click", async e => {
+    const rb = e.target.closest(".btn-reply");
+    if (rb){ const f = list.querySelector(`.reply-form[data-id="${rb.dataset.id}"]`); if(f){ f.hidden=!f.hidden; if(!f.hidden) f.querySelector(".rmsg").focus(); } return; }
+    const del = e.target.closest(".btn-del");
+    if (del){
+      if(!confirm("이 글을 삭제할까요?")) return;
+      const id = del.dataset.id;
+      try {
+        if (del.dataset.top === "1"){
+          const subs = await getDocs(query(posts, where("parentId","==",id)));
+          for (const s of subs.docs) await deleteDoc(doc(db,"posts",s.id));
+        }
+        await deleteDoc(doc(db,"posts",id));
+      } catch(err){ alert("삭제 실패: "+err.message); }
+    }
+  });
+
+  // ---------- delegated: reply submit ----------
+  list.addEventListener("submit", async e => {
+    if (!e.target.classList.contains("reply-form")) return;
+    e.preventDefault();
+    const f = e.target;
+    const name = f.querySelector(".rname").value.trim().slice(0,60);
+    const message = f.querySelector(".rmsg").value.trim();
+    if(!message) return;
+    const data = { name, message, parentId: f.dataset.id, createdAt: serverTimestamp() };
+    if (isAdmin) data.admin = true;
+    const btn = f.querySelector("button"); btn.disabled = true;
+    try { await addDoc(posts, data); f.querySelector(".rmsg").value=""; f.hidden = true; }
+    catch(err){ alert("답글 등록 실패: "+err.message); }
+    finally { btn.disabled = false; }
+  });
+
+  // ---------- new question ----------
+  form.addEventListener("submit", async e => {
+    e.preventDefault();
+    const name = $("qname").value.trim().slice(0,60);
+    const message = $("qmsg").value.trim();
+    if(!message) return;
+    submitBtn.disabled = true; statusEl.textContent = "등록 중…";
+    try {
+      await addDoc(posts, { name, message, createdAt: serverTimestamp() });
+      $("qmsg").value = "";
+      statusEl.textContent = "등록되었습니다.";
+      setTimeout(()=> statusEl.textContent = "", 2500);
+    } catch(err){ statusEl.textContent = "등록 실패: " + err.message; }
+    finally { submitBtn.disabled = false; }
+  });
 </script>
 </body>
 </html>
