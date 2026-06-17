@@ -7,96 +7,171 @@
 <title>TEM Analysis Tools — 다운로드</title>
 <style>
   :root{
-    --bg:#0f1115; --panel:#171a21; --panel2:#1e222b; --line:#2a2f3a;
-    --txt:#e7eaf0; --muted:#9aa3b2; --accent:#4f8cff; --accent2:#36c08a;
-    --warn:#e0b34a;
+    --bg:#0b0d12; --bg2:#0f1218; --panel:#151923; --panel2:#1b2230; --line:#262d3b;
+    --txt:#eef1f7; --muted:#9aa4b6; --faint:#6b7589;
+    --blue:#5b9dff; --green:#3ddc97; --violet:#b98bff; --warn:#ecc25b;
   }
   *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
   body{
-    margin:0; font-family:"Segoe UI",system-ui,-apple-system,sans-serif;
-    background:var(--bg); color:var(--txt); line-height:1.55;
+    margin:0; color:var(--txt); line-height:1.6;
+    font-family:"Segoe UI",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    background:
+      radial-gradient(900px 500px at 15% -8%, rgba(91,157,255,.16), transparent 55%),
+      radial-gradient(800px 520px at 92% 4%, rgba(185,139,255,.14), transparent 55%),
+      var(--bg);
+    -webkit-font-smoothing:antialiased;
   }
-  .wrap{max-width:960px; margin:0 auto; padding:48px 20px 80px}
-  header{text-align:center; margin-bottom:8px}
-  header h1{font-size:30px; margin:0 0 6px; letter-spacing:-.3px}
-  header p{color:var(--muted); margin:0}
-  .badge{display:inline-block; font-size:12px; color:var(--accent2);
-    border:1px solid var(--line); border-radius:20px; padding:3px 12px; margin-top:14px}
+  .wrap{max-width:980px; margin:0 auto; padding:0 22px}
+
+  /* hero */
+  header{padding:64px 0 18px; text-align:center}
+  .logo{width:62px; height:62px; margin:0 auto 18px; display:block; filter:drop-shadow(0 6px 18px rgba(91,157,255,.35))}
+  header h1{font-size:34px; margin:0 0 10px; letter-spacing:-.5px; font-weight:700}
+  header h1 .accent{background:linear-gradient(90deg,var(--blue),var(--violet));
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent}
+  header p{color:var(--muted); margin:0 auto; max-width:560px; font-size:15px}
+  .pills{display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:18px}
+  .pill{font-size:12px; color:var(--muted); border:1px solid var(--line);
+    background:rgba(255,255,255,.02); border-radius:20px; padding:5px 13px}
+  .pill b{color:var(--txt); font-weight:600}
 
   /* gate */
-  #gate{max-width:420px; margin:56px auto; background:var(--panel);
-    border:1px solid var(--line); border-radius:14px; padding:28px; text-align:center}
-  #gate h2{margin:0 0 6px; font-size:18px}
-  #gate p{color:var(--muted); font-size:14px; margin:0 0 18px}
-  #gate input{width:100%; padding:12px 14px; font-size:15px; border-radius:9px;
-    border:1px solid var(--line); background:var(--panel2); color:var(--txt); outline:none}
-  #gate input:focus{border-color:var(--accent)}
-  #gate button{width:100%; margin-top:12px; padding:12px; font-size:15px; font-weight:600;
-    border:0; border-radius:9px; background:var(--accent); color:#fff; cursor:pointer}
-  #gate button:hover{filter:brightness(1.08)}
-  #err{color:#ff6b6b; font-size:13px; min-height:18px; margin-top:10px}
+  #gate{max-width:400px; margin:46px auto 60px; background:linear-gradient(180deg,var(--panel),var(--bg2));
+    border:1px solid var(--line); border-radius:18px; padding:30px 28px;
+    text-align:center; box-shadow:0 20px 50px rgba(0,0,0,.4)}
+  .lock{width:44px;height:44px;margin:0 auto 12px;display:block;color:var(--blue)}
+  #gate h2{margin:0 0 6px; font-size:18px; font-weight:600}
+  #gate p{color:var(--muted); font-size:13.5px; margin:0 0 20px}
+  .field{position:relative}
+  #gate input{width:100%; padding:13px 15px; font-size:15px; border-radius:11px;
+    border:1px solid var(--line); background:var(--panel2); color:var(--txt); outline:none;
+    transition:border-color .15s, box-shadow .15s}
+  #gate input:focus{border-color:var(--blue); box-shadow:0 0 0 3px rgba(91,157,255,.18)}
+  #gate button{width:100%; margin-top:13px; padding:13px; font-size:15px; font-weight:600;
+    border:0; border-radius:11px; cursor:pointer; color:#06121f;
+    background:linear-gradient(90deg,var(--blue),#7db4ff); transition:filter .15s, transform .05s}
+  #gate button:hover{filter:brightness(1.07)} #gate button:active{transform:translateY(1px)}
+  #err{color:#ff7a7a; font-size:13px; min-height:18px; margin-top:11px}
 
   /* content */
-  #content{display:none}
-  .grid{display:grid; gap:18px; margin-top:26px}
-  .card{background:var(--panel); border:1px solid var(--line); border-radius:14px;
-    padding:22px 22px 20px; display:flex; flex-direction:column; gap:6px}
-  .card h3{margin:0; font-size:19px}
-  .card .desc{color:var(--muted); font-size:14px; margin:2px 0 8px}
-  .meta{display:flex; gap:14px; flex-wrap:wrap; color:var(--muted); font-size:12.5px; margin-bottom:14px}
-  .meta b{color:var(--txt); font-weight:600}
-  .dl{align-self:flex-start; text-decoration:none; font-weight:600; font-size:14.5px;
-    background:var(--accent2); color:#06231a; padding:11px 20px; border-radius:9px}
-  .dl:hover{filter:brightness(1.06)}
-  .note{background:var(--panel2); border:1px solid var(--line); border-left:3px solid var(--warn);
-    border-radius:10px; padding:16px 18px; margin-top:30px; font-size:13.5px; color:var(--muted)}
-  .note b{color:var(--txt)}
-  .note code{background:#0c0e12; padding:1px 6px; border-radius:5px; color:#cdd6e6; font-size:12.5px}
-  footer{text-align:center; color:var(--muted); font-size:12px; margin-top:40px}
-  ol{margin:8px 0 0; padding-left:20px} ol li{margin:3px 0}
+  #content{display:none; animation:fade .5s ease both; padding-bottom:70px}
+  @keyframes fade{from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none}}
+  .section-label{color:var(--faint); font-size:12px; letter-spacing:.12em; text-transform:uppercase;
+    margin:8px 0 16px; text-align:center}
+  .grid{display:grid; gap:16px}
+  .card{position:relative; overflow:hidden; background:linear-gradient(180deg,var(--panel),var(--bg2));
+    border:1px solid var(--line); border-radius:16px; padding:24px 24px 22px;
+    transition:transform .16s, border-color .16s, box-shadow .16s}
+  .card:hover{transform:translateY(-3px); border-color:var(--ac); box-shadow:0 14px 36px rgba(0,0,0,.35)}
+  .card::before{content:""; position:absolute; inset:0 auto 0 0; width:3px; background:var(--ac)}
+  .card-top{display:flex; align-items:center; gap:14px; margin-bottom:6px}
+  .icon{width:46px; height:46px; flex:none; border-radius:12px; padding:9px;
+    background:color-mix(in srgb, var(--ac) 15%, transparent); color:var(--ac)}
+  .card h3{margin:0; font-size:18.5px; font-weight:650}
+  .desc{color:var(--muted); font-size:14px; margin:4px 0 14px}
+  .meta{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px}
+  .tag{font-size:12px; color:var(--muted); background:rgba(255,255,255,.03);
+    border:1px solid var(--line); border-radius:7px; padding:4px 10px}
+  .tag b{color:var(--txt); font-weight:600}
+  .dl{display:inline-flex; align-items:center; gap:8px; text-decoration:none; font-weight:600;
+    font-size:14.5px; color:#06121f; background:var(--ac); padding:11px 20px; border-radius:10px;
+    transition:filter .15s} .dl:hover{filter:brightness(1.08)}
+  .dl svg{width:17px;height:17px}
+
+  .note{background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--warn);
+    border-radius:12px; padding:18px 20px; margin-top:26px; font-size:13.5px; color:var(--muted)}
+  .note b{color:var(--txt)} .note code{background:#080a0e; padding:2px 7px; border-radius:5px;
+    color:#cdd6e6; font-size:12.5px; font-family:"Cascadia Code",Consolas,monospace}
+  ol{margin:10px 0 0; padding-left:20px} ol li{margin:5px 0}
+  footer{text-align:center; color:var(--faint); font-size:12px; margin-top:40px;
+    padding-top:24px; border-top:1px solid var(--line)}
 </style>
 </head>
 <body>
 <div class="wrap">
+
   <header>
-    <h1>TEM Analysis Tools</h1>
-    <p>한양대 EM lab · 실행형(.exe) 배포 — Python 설치 불필요</p>
-    <div class="badge">Windows 10/11 · 64-bit</div>
+    <svg class="logo" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="32" cy="32" r="5.5" fill="#5b9dff"/>
+      <g stroke="#b98bff" stroke-width="2.2" fill="none">
+        <ellipse cx="32" cy="32" rx="26" ry="11"/>
+        <ellipse cx="32" cy="32" rx="26" ry="11" transform="rotate(60 32 32)"/>
+        <ellipse cx="32" cy="32" rx="26" ry="11" transform="rotate(120 32 32)"/>
+      </g>
+      <circle cx="58" cy="32" r="2.6" fill="#3ddc97"/>
+      <circle cx="19" cy="10.5" r="2.6" fill="#3ddc97"/>
+      <circle cx="19" cy="53.5" r="2.6" fill="#3ddc97"/>
+    </svg>
+    <h1>TEM <span class="accent">Analysis Tools</span></h1>
+    <p>한양대학교 EM Lab의 투과전자현미경 분석 프로그램을 실행형(.exe)으로 배포합니다. Python 설치 없이 압축만 풀면 바로 실행됩니다.</p>
+    <div class="pills">
+      <span class="pill"><b>Windows</b> 10 / 11</span>
+      <span class="pill">64-bit</span>
+      <span class="pill">Python 설치 <b>불필요</b></span>
+      <span class="pill">v1.0.0</span>
+    </div>
   </header>
 
   <!-- password gate -->
   <div id="gate">
-    <h2>🔒 접근 암호</h2>
+    <svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="4" y="11" width="16" height="10" rx="2.2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/><circle cx="12" cy="16" r="1.3" fill="currentColor" stroke="none"/>
+    </svg>
+    <h2>접근 암호</h2>
     <p>연구실 공유 암호를 입력하세요.</p>
-    <input id="pw" type="password" placeholder="암호" autocomplete="off"
-           onkeydown="if(event.key==='Enter')check()">
-    <button onclick="check()">열기</button>
+    <div class="field">
+      <input id="pw" type="password" placeholder="암호" autocomplete="off"
+             onkeydown="if(event.key==='Enter')check()">
+    </div>
+    <button onclick="check()">열기 →</button>
     <div id="err"></div>
   </div>
 
-  <!-- download cards (revealed after correct password) -->
+  <!-- download cards -->
   <div id="content">
+    <div class="section-label">다운로드 · 3개 프로그램</div>
     <div class="grid">
 
-      <div class="card">
-        <h3>HRTEM Integrated Analyzer</h3>
+      <div class="card" style="--ac:var(--blue)">
+        <div class="card-top">
+          <svg class="icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <circle cx="5" cy="5" r="1.7"/><circle cx="12" cy="5" r="1.7"/><circle cx="19" cy="5" r="1.7"/>
+            <circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="2.6"/><circle cx="19" cy="12" r="1.7"/>
+            <circle cx="5" cy="19" r="1.7"/><circle cx="12" cy="19" r="1.7"/><circle cx="19" cy="19" r="1.7"/>
+          </svg>
+          <h3>HRTEM Integrated Analyzer</h3>
+        </div>
         <div class="desc">dm3/dm4 HRTEM 이미지 필터링 → ROI → FFT 스폿 검출 → CIF zone-axis 인덱싱 → 상(phase) 분리까지 한 창에서.</div>
-        <div class="meta"><span>버전 <b>v1.0.0</b></span><span>크기 <b>~330 MB</b> (zip)</span><span>Windows 64-bit</span></div>
-        <a class="dl" href="https://github.com/qmrk123/tem-tools/releases/download/v1.0.0/HRTEM-Analyzer-v1.0.0-win64.zip">⬇ 다운로드</a>
+        <div class="meta"><span class="tag">버전 <b>v1.0.0</b></span><span class="tag">~<b>330 MB</b> (zip)</span><span class="tag">Win 64-bit</span></div>
+        <a class="dl" href="https://github.com/qmrk123/tem-tools/releases/download/v1.0.0/HRTEM-Analyzer-v1.0.0-win64.zip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>다운로드</a>
       </div>
 
-      <div class="card">
-        <h3>JEOL EDS Analysis</h3>
+      <div class="card" style="--ac:var(--green)">
+        <div class="card-top">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 20h18"/><path d="M5 20V13M9 20V7M13 20v-9M17 20V4M21 20v-6"/>
+          </svg>
+          <h3>JEOL EDS Analysis</h3>
+        </div>
         <div class="desc">JEOL .pts/.asw EDS 스펙트럼 이미지 — 원소 매핑, Cliff-Lorimer/ζ 정량, 자동 피크 식별, 라인스캔.</div>
-        <div class="meta"><span>버전 <b>v1.0.0</b></span><span>크기 <b>~360 MB</b> (zip)</span><span>Windows 64-bit</span></div>
-        <a class="dl" href="https://github.com/qmrk123/tem-tools/releases/download/v1.0.0/JEOL-EDS-Analyzer-v1.0.0-win64.zip">⬇ 다운로드</a>
+        <div class="meta"><span class="tag">버전 <b>v1.0.0</b></span><span class="tag">~<b>360 MB</b> (zip)</span><span class="tag">Win 64-bit</span></div>
+        <a class="dl" href="https://github.com/qmrk123/tem-tools/releases/download/v1.0.0/JEOL-EDS-Analyzer-v1.0.0-win64.zip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>다운로드</a>
       </div>
 
-      <div class="card">
-        <h3>EELS Oxidation-State Mapping</h3>
+      <div class="card" style="--ac:var(--violet)">
+        <div class="card-top">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 17c3 0 4-9 7-9s3 5 5 5 3-7 6-7"/>
+          </svg>
+          <h3>EELS Oxidation-State Mapping</h3>
+        </div>
         <div class="desc">EELS 스펙트럼 이미지 — 자기지도 CNN 디노이징 + ELNES 클러스터링으로 산화수 매핑 (CPU 추론 포함).</div>
-        <div class="meta"><span>버전 <b>v1.0.0</b></span><span>크기 <b>~250 MB</b> (zip)</span><span>Windows 64-bit</span></div>
-        <a class="dl" href="https://github.com/qmrk123/tem-tools/releases/download/v1.0.0/EELS-Oxidation-Mapping-v1.0.0-win64.zip">⬇ 다운로드</a>
+        <div class="meta"><span class="tag">버전 <b>v1.0.0</b></span><span class="tag">~<b>250 MB</b> (zip)</span><span class="tag">Win 64-bit</span></div>
+        <a class="dl" href="https://github.com/qmrk123/tem-tools/releases/download/v1.0.0/EELS-Oxidation-Mapping-v1.0.0-win64.zip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>다운로드</a>
       </div>
 
     </div>
@@ -110,8 +185,9 @@
       </ol>
     </div>
 
-    <footer>한양대학교 EM Lab · 내부 배포용 · v1.0.0 (2026-06)</footer>
+    <footer>한양대학교 EM Lab · 내부 배포용 · v1.0.0 (2026-06) · made by Hyunbin Kim</footer>
   </div>
+
 </div>
 
 <script>
@@ -119,7 +195,7 @@
   // To change the password: run in PowerShell, then paste the hash below as PASS_HASH.
   //   $b=[Text.Encoding]::UTF8.GetBytes("NEW_PASSWORD")
   //   ([BitConverter]::ToString([Security.Cryptography.SHA256]::Create().ComputeHash($b)) -replace '-').ToLower()
-  const PASS_HASH = "d8f22cb5f41bf63f37c1e43824f348405085069a3bcbc2072b3490674a0ca31b"; // "emlab2026"
+  const PASS_HASH = "c3a1a20fcd75764938bbfca262bf1a8e5eca20f74e2d49929aea9fb85ad6c251";
 
   async function sha256(s){
     const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
