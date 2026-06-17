@@ -15,6 +15,7 @@
     --blue:#5b9dff; --green:#3ddc97; --violet:#b98bff; --warn:#ecc25b;
   }
   *{box-sizing:border-box}
+  [hidden]{display:none !important}   /* keep the `hidden` attribute winning over display:flex rules */
   html{scroll-behavior:smooth}
   body{
     margin:0; color:var(--txt); line-height:1.6;
