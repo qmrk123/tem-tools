@@ -156,6 +156,7 @@
   .btn-del{background:transparent; border:0; cursor:pointer; font-size:13px; margin-left:auto;
     opacity:.65; padding:0 4px; line-height:1}
   .btn-del:hover{opacity:1}
+  .btn-del[data-armed="1"], .pn-del[data-armed="1"]{opacity:1; color:#ff6b6b; font-size:12px; font-weight:600}
 
   /* patch notes: card button + modal */
   .card-actions{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
@@ -519,7 +520,12 @@
     if (rb){ const f = list.querySelector(`.reply-form[data-id="${rb.dataset.id}"]`); if(f){ f.hidden=!f.hidden; if(!f.hidden) f.querySelector(".rmsg").focus(); } return; }
     const del = e.target.closest(".btn-del");
     if (del){
-      if(!confirm("이 글을 삭제할까요?")) return;
+      if (del.dataset.armed !== "1"){            // first click: arm (no confirm() — robust if dialogs are blocked)
+        list.querySelectorAll('.btn-del[data-armed="1"]').forEach(b => { b.dataset.armed="0"; b.textContent="🗑"; });
+        del.dataset.armed = "1"; del.textContent = "삭제?";
+        setTimeout(() => { if(del.isConnected){ del.dataset.armed="0"; del.textContent="🗑"; } }, 4000);
+        return;
+      }
       const id = del.dataset.id;
       try {
         if (del.dataset.top === "1"){
@@ -607,7 +613,12 @@
 
   pnBody.addEventListener("click", async e => {
     const del = e.target.closest(".pn-del"); if(!del) return;
-    if(!confirm("이 패치노트를 삭제할까요?")) return;
+    if (del.dataset.armed !== "1"){
+      pnBody.querySelectorAll('.pn-del[data-armed="1"]').forEach(b => { b.dataset.armed="0"; b.textContent="🗑"; });
+      del.dataset.armed = "1"; del.textContent = "삭제?";
+      setTimeout(() => { if(del.isConnected){ del.dataset.armed="0"; del.textContent="🗑"; } }, 4000);
+      return;
+    }
     try { await deleteDoc(doc(db,"patchnotes",del.dataset.id)); } catch(err){ alert("삭제 실패: "+err.message); }
   });
 
