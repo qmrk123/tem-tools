@@ -90,6 +90,34 @@
   footer{text-align:center; color:var(--faint); font-size:12.5px; line-height:1.9; margin-top:40px;
     padding-top:24px; border-top:1px solid var(--line)}
   footer a{color:var(--blue); text-decoration:none} footer a:hover{text-decoration:underline}
+
+  /* Q&A board */
+  .board{margin-top:4px}
+  #qform{background:linear-gradient(180deg,var(--panel),var(--bg2)); border:1px solid var(--line);
+    border-radius:14px; padding:18px; margin-bottom:18px}
+  #qform .row{display:flex; gap:10px; margin-bottom:10px}
+  #qform input, #qform textarea{width:100%; padding:11px 13px; font-size:14px; border-radius:9px;
+    border:1px solid var(--line); background:var(--panel2); color:var(--txt); outline:none;
+    font-family:inherit; transition:border-color .15s, box-shadow .15s}
+  #qform input:focus, #qform textarea:focus{border-color:var(--blue); box-shadow:0 0 0 3px rgba(91,157,255,.16)}
+  #qname{max-width:200px}
+  #qform textarea{resize:vertical; min-height:84px; line-height:1.5}
+  #qform .actions{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:10px}
+  #qform button{padding:10px 22px; font-size:14px; font-weight:600; border:0; border-radius:9px;
+    cursor:pointer; color:#06121f; background:linear-gradient(90deg,var(--blue),#7db4ff)}
+  #qform button:disabled{opacity:.5; cursor:default}
+  #qstatus{font-size:13px; color:var(--muted)}
+  #qlist{display:flex; flex-direction:column; gap:12px}
+  .post{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:15px 17px}
+  .post .head{display:flex; align-items:baseline; gap:10px; margin-bottom:5px}
+  .post .who{font-weight:650; font-size:14px; color:var(--txt)}
+  .post .when{font-size:12px; color:var(--faint)}
+  .post .body{font-size:14px; color:var(--muted); white-space:pre-wrap; word-break:break-word}
+  .post .reply{margin-top:11px; padding:11px 13px; border-left:2px solid var(--green);
+    background:rgba(61,220,151,.06); border-radius:8px}
+  .post .reply .who{color:var(--green); font-size:13px}
+  .post .reply .body{font-size:13.5px; margin-top:3px}
+  .board .empty{color:var(--faint); font-size:13.5px; text-align:center; padding:20px}
 </style>
 </head>
 <body>
@@ -220,6 +248,21 @@
       </ol>
     </div>
 
+    <div class="section-label" style="margin-top:36px">문의 · 피드백 (Q&amp;A)</div>
+    <div class="board">
+      <form id="qform" autocomplete="off">
+        <div class="row">
+          <input id="qname" placeholder="이름 (선택)" maxlength="60">
+        </div>
+        <textarea id="qmsg" placeholder="프로그램 사용 중 질문, 버그 제보, 건의 사항을 남겨주세요." maxlength="2000" required></textarea>
+        <div class="actions">
+          <span id="qstatus"></span>
+          <button id="qsubmit" type="submit">등록</button>
+        </div>
+      </form>
+      <div id="qlist"><div class="empty">게시판을 불러오는 중…</div></div>
+    </div>
+
     <footer>
       한양대학교 신소재공학과<br>
       Energy/Electronic Materials Analysis Laboratory<br>
@@ -258,6 +301,69 @@
     document.getElementById("content").style.display="block";
   }
   if(sessionStorage.getItem("tem_ok")==="1"){ reveal(); }
+</script>
+
+<!-- Q&A board (Firebase Firestore). Visitors post with name+message; no login/GitHub needed. -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, serverTimestamp }
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  // ===== Firebase 설정 — 본인 프로젝트의 웹 config로 교체하세요 (공개되어도 안전한 값) =====
+  const firebaseConfig = {
+    apiKey: "PASTE_API_KEY",
+    authDomain: "PASTE_PROJECT.firebaseapp.com",
+    projectId: "PASTE_PROJECT_ID",
+    storageBucket: "PASTE_PROJECT.appspot.com",
+    messagingSenderId: "PASTE_SENDER_ID",
+    appId: "PASTE_APP_ID"
+  };
+
+  const list = document.getElementById("qlist");
+  const form = document.getElementById("qform");
+  const statusEl = document.getElementById("qstatus");
+  const submitBtn = document.getElementById("qsubmit");
+  const esc = s => (s||"").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  if (firebaseConfig.apiKey.startsWith("PASTE")) {
+    list.innerHTML = '<div class="empty">게시판은 관리자 설정 후 활성화됩니다.</div>';
+    submitBtn.disabled = true;
+  } else {
+    const db = getFirestore(initializeApp(firebaseConfig));
+    const posts = collection(db, "posts");
+
+    const fmt = ts => {
+      if(!ts || !ts.toDate) return "방금";
+      const d = ts.toDate(), p = n => String(n).padStart(2,"0");
+      return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+    };
+
+    onSnapshot(query(posts, orderBy("createdAt","desc"), limit(100)), snap => {
+      if (snap.empty){ list.innerHTML = '<div class="empty">아직 글이 없습니다. 첫 문의를 남겨보세요.</div>'; return; }
+      let html = "";
+      snap.forEach(doc => {
+        const d = doc.data();
+        const reply = d.reply ? `<div class="reply"><div class="who">↳ 운영자 답변</div><div class="body">${esc(d.reply)}</div></div>` : "";
+        html += `<div class="post"><div class="head"><span class="who">${esc(d.name)||"익명"}</span><span class="when">${fmt(d.createdAt)}</span></div><div class="body">${esc(d.message)}</div>${reply}</div>`;
+      });
+      list.innerHTML = html;
+    }, err => { list.innerHTML = '<div class="empty">게시판을 불러오지 못했습니다: '+esc(err.message)+'</div>'; });
+
+    form.addEventListener("submit", async e => {
+      e.preventDefault();
+      const name = document.getElementById("qname").value.trim().slice(0,60);
+      const message = document.getElementById("qmsg").value.trim();
+      if(!message) return;
+      submitBtn.disabled = true; statusEl.textContent = "등록 중…";
+      try {
+        await addDoc(posts, { name, message, createdAt: serverTimestamp() });
+        document.getElementById("qmsg").value = "";
+        statusEl.textContent = "등록되었습니다.";
+        setTimeout(()=> statusEl.textContent = "", 2500);
+      } catch(err){ statusEl.textContent = "등록 실패: " + err.message; }
+      finally { submitBtn.disabled = false; }
+    });
+  }
 </script>
 </body>
 </html>
